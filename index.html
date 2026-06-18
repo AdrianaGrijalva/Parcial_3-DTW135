@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Room: La Cámara de los Cinco Desafíos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-dark-custom text-light py-4">
+
+    <div class="container json-container">
+        <header class="text-center mb-5 project-header">
+            <h1 class="display-4 fw-bold text-gradient">LA CÁMARA DE LOS CINCO DESAFÍOS</h1>
+            <p class="lead text-muted-custom">Facultad Multidisciplinaria de Occidente - UES</p>
+        </header>
+
+        <div id="seccion-nivel1" class="card card-custom mb-4 glass-card">
+            <div class="card-header bg-level-1"><h3 class="h5 m-0 text-white">Nivel 1: El Guardián de la Ubicación (15%)</h3></div>
+            <div class="card-body">
+                <p class="text-secondary-light">El sistema requiere verificar tus coordenadas geográficas actuales para validar tu identidad de explorador.</p>
+                <button id="btn-n1-ubicar" class="btn btn-action-primary mb-3">Obtener Ubicación Actual</button>
+                <div id="alert-n1-error" class="alert alert-danger-custom d-none"></div>
+                <div id="wrapper-n1-datos" class="d-none geo-data-box">
+                    <p class="mb-1"><strong>Latitud:</strong> <span id="n1-latitud" class="text-info"></span></p>
+                    <p class="mb-2"><strong>Longitud:</strong> <span id="n1-longitud" class="text-info"></span></p>
+                    <button id="btn-n1-avanzar" class="btn btn-action-success">Avanzar al Nivel 2</button>
+                </div>
+            </div>
+        </div>
