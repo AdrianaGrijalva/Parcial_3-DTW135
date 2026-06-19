@@ -41,3 +41,88 @@
             </div>
         </div>
 
+        <div id="seccion-nivel3" class="card card-custom mb-4 glass-card nivel-bloqueado">
+            <div class="card-header bg-level-3"><h3 class="h5 m-0 text-white">Nivel 3: La Evidencia del Explorador (20%)</h3></div>
+            <div class="card-body">
+                <p class="text-secondary-light">Activa el sensor óptico para tomar una captura de seguridad y resguardarla en el registro local del terminal.</p>
+                <button id="btn-n3-camara" class="btn btn-action-primary mb-3">Inicializar Cámara</button>
+                <div id="alert-n3-error" class="alert alert-danger-custom d-none"></div>
+                
+                <div class="row g-3">
+                    <div class="col-md-6 text-center">
+                        <video id="video-n3" width="320" height="240" autoplay class="d-none camera-feed"></video>
+                        <button id="btn-n3-capturar" class="btn btn-action-warning d-none mt-2">Capturar Fotograma</button>
+                    </div>
+                    <div class="col-md-6 text-center">
+                        <canvas id="canvas-n3-foto" width="320" height="240" class="d-none"></canvas>
+                        <h5 id="titulo-n3-preview" class="mt-2 h6 d-none text-warning">Evidencia Registrada Localmente:</h5>
+                        <img id="img-n3-guardada" class="img-fluid d-none img-preview" alt="Foto capturada">
+                    </div>
+                </div>
+                <button id="btn-n3-avanzar" class="btn btn-action-success d-none mt-3">Avanzar al Nivel 4</button>
+            </div>
+        </div>
+
+        <div id="seccion-nivel4" class="card card-custom mb-4 glass-card nivel-bloqueado">
+            <div class="card-header bg-level-4"><h3 class="h5 m-0 text-white">Nivel 4: El Núcleo de Procesamiento (25%)</h3></div>
+            <div class="card-body">
+                <p class="text-secondary-light">Ejecuta un hilo asíncrono para calcular métricas estadísticas sobre un lote masivo de 20,000 lecturas ambientales.</p>
+                <button id="btn-n4-procesar" class="btn btn-action-primary mb-3">Procesar Matriz de Sensores</button>
+                
+                <div id="wrapper-n4-progreso" class="progress progress-custom mb-3 d-none">
+                    <div id="barra-n4" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" style="width: 0%">0%</div>
+                </div>
+
+                <div id="card-n4-resultados" class="card bg-inner-dark d-none">
+                    <div class="card-body">
+                        <h4 class="h6 text-info mb-3">Métricas Obtenidas (Hilo Secundario)</h4>
+                        <div class="row g-2 text-center">
+                            <div class="col-6 col-md-3"><div class="stat-box"><strong>Temp. Promedio</strong><br><span id="n4-p-temp" class="text-light-custom"></span>°C</div></div>
+                            <div class="col-6 col-md-3"><div class="stat-box"><strong>Temp. Máx/Mín</strong><br><span id="n4-max-temp" class="text-danger"></span> / <span id="n4-min-temp" class="text-info"></span></div></div>
+                            <div class="col-6 col-md-3"><div class="stat-box"><strong>Hum. Promedio</strong><br><span id="n4-p-hum" class="text-light-custom"></span>%</div></div>
+                            <div class="col-6 col-md-3"><div class="stat-box"><strong>Hum. Máx/Mín</strong><br><span id="n4-max-hum" class="text-danger"></span> / <span id="n4-min-hum" class="text-info"></span></div></div>
+                        </div>
+                    </div>
+                </div>
+                <button id="btn-n4-avanzar" class="btn btn-action-success d-none mt-3">Avanzar al Nivel 5</button>
+            </div>
+        </div>
+
+        <div id="seccion-nivel5" class="card card-custom mb-4 glass-card nivel-bloqueado">
+            <div class="card-header bg-level-5"><h3 class="h5 m-0 text-white">Nivel 5: El Portal Cuántico (25%)</h3></div>
+            <div class="card-body">
+                <p class="text-secondary-light">Simulación extrema: Depura 250,000 registros, filtra anomalías matemáticas negativas y extrae los rangos superiores.</p>
+                <button id="btn-5-simular" class="btn btn-action-primary mb-3">Desencriptar Registros Cuánticos</button>
+
+                <div id="wrapper-n5-progreso" class="progress progress-custom mb-3 d-none">
+                    <div id="barra-n5" class="progress-bar progress-bar-striped progress-bar-animated bg-warning" role="progressbar" style="width: 0%">0%</div>
+                </div>
+
+                <div id="card-n5-resultados" class="card bg-inner-dark d-none mb-3">
+                    <div class="card-body">
+                        <h4 class="h6 text-warning mb-3">Resultados del Filtrado y Análisis Crítico</h4>
+                        <p class="mb-1"><strong>Registros Válidos:</strong> <span id="n5-validos" class="text-light-custom"></span> de 250,000</p>
+                        <p class="mb-3"><strong>Temperatura General Promedio:</strong> <span id="n5-promedio" class="text-light-custom"></span>°C</p>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="h6 text-info border-bottom border-secondary pb-1">Top 10 Temperaturas Más Altas</h5>
+                                <ol id="lista-n5-temp" class="list-ordered-custom"></ol>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="h6 text-info border-bottom border-secondary pb-1">Top 10 Presiones Más Altas</h5>
+                                <ol id="lista-n5-pres" class="list-ordered-custom"></ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button id="btn-n5-exportar" class="btn btn-action-info d-none me-2">Exportar Data (JSON)</button>
+                <div id="alert-n5-exito" class="alert alert-final-success d-none mt-3 fw-bold text-center">BASE DE DATOS RESTAURADA - CIUDAD INTELIGENTE OPERATIVA</div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
+
+
