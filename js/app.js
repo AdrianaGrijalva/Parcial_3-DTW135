@@ -113,7 +113,7 @@ function dibujarMapaInteractivo() {
     const height = canvas.height;
 
     ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = '#08122f';
+    ctx.fillStyle = '#4b5984';
     ctx.fillRect(0, 0, width, height);
 
     ctx.strokeStyle = '#3e8cff';
