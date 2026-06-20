@@ -4,6 +4,7 @@ const state = {
     cameraStream: null,
     n4Processed: false,
     n5Processed: false,
+    worker: new Worker('js/worker.js'),
 };
 
 const selectors = {
@@ -113,7 +114,7 @@ function dibujarMapaInteractivo() {
     const height = canvas.height;
 
     ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = '#4b5984';
+    ctx.fillStyle = '#08122f';
     ctx.fillRect(0, 0, width, height);
 
     ctx.strokeStyle = '#3e8cff';
@@ -199,55 +200,60 @@ function procesarMatrizSensores() {
     }
 
     const totalLecturas = 20000;
-    const bloque = 500;
-    let procesadas = 0;
-    let sumaTemp = 0;
-    let sumaHum = 0;
-    let maxTemp = -Infinity;
-    let minTemp = Infinity;
-    let maxHum = -Infinity;
-    let minHum = Infinity;
+    const datos = [];
+
+    // Generar datos de sensores
+    for (let i = 0; i < totalLecturas; i++) {
+        datos.push({
+            temperatura: randomBetween(12, 35),
+            humedad: randomBetween(18, 88)
+        });
+    }
 
     showElement(selectors.n4.wrapperProgreso);
     setButtonDisabled(selectors.n4.btnProcesar, true);
 
-    function procesarBloque() {
-        const fin = Math.min(procesadas + bloque, totalLecturas);
-
-        for (; procesadas < fin; procesadas += 1) {
-            const temp = randomBetween(12, 35);
-            const hum = randomBetween(18, 88);
-
-            sumaTemp += temp;
-            sumaHum += hum;
-            maxTemp = Math.max(maxTemp, temp);
-            minTemp = Math.min(minTemp, temp);
-            maxHum = Math.max(maxHum, hum);
-            minHum = Math.min(minHum, hum);
+    // Simular progreso mientras el worker procesa
+    let progreso = 0;
+    const intervalo = setInterval(() => {
+        if (progreso < 90) {
+            progreso += Math.random() * 40;
+            if (progreso > 90) progreso = 90;
+            actualizarProgreso(selectors.n4.barra, Math.floor(progreso));
         }
+    }, 100);
 
-        const porcentaje = Math.floor((procesadas / totalLecturas) * 100);
-        actualizarProgreso(selectors.n4.barra, porcentaje);
+    // Enviar datos al worker
+    state.worker.postMessage({
+        tipo: 'nivel4',
+        datos: datos
+    });
 
-        if (procesadas < totalLecturas) {
-            window.setTimeout(procesarBloque, 10);
-            return;
+    // Listener para recibir resultado del worker
+    const handleWorkerMessage = (e) => {
+        if (e.data.tipo === 'resultadoNivel4') {
+            clearInterval(intervalo);
+            const { stats } = e.data;
+
+            selectors.n4.pTemp.textContent = stats.promedioTemperatura.toFixed(1);
+            selectors.n4.maxTemp.textContent = stats.maximaTemperatura.toFixed(1);
+            selectors.n4.minTemp.textContent = stats.minimaTemperatura.toFixed(1);
+            selectors.n4.pHum.textContent = stats.promedioHumedad.toFixed(1);
+            selectors.n4.maxHum.textContent = stats.maximaHumedad.toFixed(1);
+            selectors.n4.minHum.textContent = stats.minimaHumedad.toFixed(1);
+
+            actualizarProgreso(selectors.n4.barra, 100);
+            showElement(selectors.n4.cardResultados);
+            showElement(selectors.n4.btnAvanzar);
+            state.n4Processed = true;
+            scrollToSection(selectors.n4.section);
+
+            // Remover listener para evitar duplicados
+            state.worker.removeEventListener('message', handleWorkerMessage);
         }
+    };
 
-        selectors.n4.pTemp.textContent = (sumaTemp / totalLecturas).toFixed(1);
-        selectors.n4.maxTemp.textContent = maxTemp.toFixed(1);
-        selectors.n4.minTemp.textContent = minTemp.toFixed(1);
-        selectors.n4.pHum.textContent = (sumaHum / totalLecturas).toFixed(1);
-        selectors.n4.maxHum.textContent = maxHum.toFixed(1);
-        selectors.n4.minHum.textContent = minHum.toFixed(1);
-
-        showElement(selectors.n4.cardResultados);
-        showElement(selectors.n4.btnAvanzar);
-        state.n4Processed = true;
-        scrollToSection(selectors.n4.section);
-    }
-
-    procesarBloque();
+    state.worker.addEventListener('message', handleWorkerMessage);
 }
 
 function procesarRegistrosCuanticos() {
@@ -256,73 +262,69 @@ function procesarRegistrosCuanticos() {
     }
 
     const totalRegistros = 250000;
-    const bloque = 5000;
-    let procesados = 0;
-    let validos = 0;
-    let sumaTemp = 0;
-    const mejoresTemp = [];
-    const mejoresPres = [];
+    const datos = [];
+
+    // Generar registros cuánticos
+    for (let i = 0; i < totalRegistros; i++) {
+        datos.push({
+            temperatura: randomBetween(-40, 65),
+            humedad: randomBetween(0, 100),
+            presion: randomBetween(-20, 130)
+        });
+    }
 
     showElement(selectors.n5.wrapperProgreso);
     setButtonDisabled(selectors.n5.btnSimular, true);
 
-    function procesarBloque() {
-        const fin = Math.min(procesados + bloque, totalRegistros);
-
-        for (; procesados < fin; procesados += 1) {
-            const temperatura = randomBetween(-40, 65);
-            const presion = randomBetween(-20, 130);
-
-            if (temperatura < 0 || presion < 0) {
-                continue;
-            }
-
-            validos += 1;
-            sumaTemp += temperatura;
-
-            if (mejoresTemp.length < 10 || temperatura > mejoresTemp[mejoresTemp.length - 1]) {
-                mejoresTemp.push(temperatura);
-                mejoresTemp.sort((a, b) => b - a);
-                if (mejoresTemp.length > 10) mejoresTemp.pop();
-            }
-
-            if (mejoresPres.length < 10 || presion > mejoresPres[mejoresPres.length - 1]) {
-                mejoresPres.push(presion);
-                mejoresPres.sort((a, b) => b - a);
-                if (mejoresPres.length > 10) mejoresPres.pop();
-            }
+    // Simular progreso mientras el worker procesa
+    let progreso = 0;
+    const intervalo = setInterval(() => {
+        if (progreso < 90) {
+            progreso += Math.random() * 15;
+            if (progreso > 90) progreso = 90;
+            actualizarProgreso(selectors.n5.barra, Math.floor(progreso));
         }
+    }, 100);
 
-        const porcentaje = Math.floor((procesados / totalRegistros) * 100);
-        actualizarProgreso(selectors.n5.barra, porcentaje);
+    // Enviar datos al worker
+    state.worker.postMessage({
+        tipo: 'nivel5',
+        datos: datos
+    });
 
-        if (procesados < totalRegistros) {
-            window.setTimeout(procesarBloque, 10);
-            return;
+    // Listener para recibir resultado del worker
+    const handleWorkerMessage = (e) => {
+        if (e.data.tipo === 'resultadoNivel5') {
+            clearInterval(intervalo);
+            const { stats } = e.data;
+
+            selectors.n5.validos.textContent = stats.cantidadValidos.toLocaleString();
+            selectors.n5.promedio.textContent = stats.promedioGeneral.toFixed(1);
+            selectors.n5.listaTemp.innerHTML = stats.top10Temperaturas.map((val) => `<li>${val.temperatura.toFixed(1)} °C</li>`).join('');
+            selectors.n5.listaPres.innerHTML = stats.top10Presiones.map((val) => `<li>${val.presion.toFixed(1)} hPa</li>`).join('');
+
+            actualizarProgreso(selectors.n5.barra, 100);
+            showElement(selectors.n5.cardResultados);
+            showElement(selectors.n5.btnExportar);
+            showElement(selectors.n5.alertExito);
+            state.n5Processed = true;
+            scrollToSection(selectors.n5.section);
+
+            selectors.n5.btnExportar.addEventListener('click', () => {
+                descargarJson({
+                    validos: stats.cantidadValidos,
+                    temperaturaPromedio: stats.promedioGeneral,
+                    top10Temperaturas: stats.top10Temperaturas.map((valor) => Number(valor.temperatura.toFixed(1))),
+                    top10Presiones: stats.top10Presiones.map((valor) => Number(valor.presion.toFixed(1))),
+                }, 'registros_cuanticos.json');
+            }, { once: true });
+
+            // Remover listener para evitar duplicados
+            state.worker.removeEventListener('message', handleWorkerMessage);
         }
+    };
 
-        selectors.n5.validos.textContent = validos.toLocaleString();
-        selectors.n5.promedio.textContent = validos === 0 ? '0.0' : (sumaTemp / validos).toFixed(1);
-        selectors.n5.listaTemp.innerHTML = mejoresTemp.map((val) => `<li>${val.toFixed(1)} °C</li>`).join('');
-        selectors.n5.listaPres.innerHTML = mejoresPres.map((val) => `<li>${val.toFixed(1)} hPa</li>`).join('');
-
-        showElement(selectors.n5.cardResultados);
-        showElement(selectors.n5.btnExportar);
-        showElement(selectors.n5.alertExito);
-        state.n5Processed = true;
-        scrollToSection(selectors.n5.section);
-
-        selectors.n5.btnExportar.addEventListener('click', () => {
-            descargarJson({
-                validos,
-                temperaturaPromedio: validos === 0 ? 0 : Number((sumaTemp / validos).toFixed(1)),
-                top10Temperaturas: mejoresTemp.map((valor) => Number(valor.toFixed(1))),
-                top10Presiones: mejoresPres.map((valor) => Number(valor.toFixed(1))),
-            }, 'registros_cuanticos.json');
-        }, { once: true });
-    }
-
-    procesarBloque();
+    state.worker.addEventListener('message', handleWorkerMessage);
 }
 
 function descargarJson(data, nombreArchivo) {
