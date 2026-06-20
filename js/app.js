@@ -263,13 +263,16 @@ function procesarRegistrosCuanticos() {
 
     const totalRegistros = 250000;
     const datos = [];
+    const rangoTemperatura = { min: -1.5, max: 45 };
+    const rangoHumedad = { min: 0, max: 100 };
+    const rangoPresion = { min: -5, max: 1040 };
 
     // Generar registros cuánticos
     for (let i = 0; i < totalRegistros; i++) {
         datos.push({
-            temperatura: randomBetween(-40, 65),
-            humedad: randomBetween(0, 100),
-            presion: randomBetween(-20, 130)
+            temperatura: randomBetween(rangoTemperatura.min, rangoTemperatura.max),
+            humedad: randomBetween(rangoHumedad.min, rangoHumedad.max),
+            presion: randomBetween(rangoPresion.min, rangoPresion.max)
         });
     }
 
@@ -300,8 +303,12 @@ function procesarRegistrosCuanticos() {
 
             selectors.n5.validos.textContent = stats.cantidadValidos.toLocaleString();
             selectors.n5.promedio.textContent = stats.promedioGeneral.toFixed(1);
-            selectors.n5.listaTemp.innerHTML = stats.top10Temperaturas.map((val) => `<li>${val.temperatura.toFixed(1)} °C</li>`).join('');
-            selectors.n5.listaPres.innerHTML = stats.top10Presiones.map((val) => `<li>${val.presion.toFixed(1)} hPa</li>`).join('');
+            selectors.n5.listaTemp.innerHTML = stats.top10Temperaturas.map((val) => {
+                return `<li>${val.temperatura.toFixed(1)}°C (Hum: ${Math.round(val.humedad)}%, Pres: ${Math.round(val.presion)} hPa)</li>`;
+            }).join('');
+            selectors.n5.listaPres.innerHTML = stats.top10Presiones.map((val) => {
+                return `<li>${val.presion.toFixed(1)} hPa (Temp: ${val.temperatura.toFixed(1)}°C)</li>`;
+            }).join('');
 
             actualizarProgreso(selectors.n5.barra, 100);
             showElement(selectors.n5.cardResultados);
@@ -312,10 +319,16 @@ function procesarRegistrosCuanticos() {
 
             selectors.n5.btnExportar.addEventListener('click', () => {
                 descargarJson({
-                    validos: stats.cantidadValidos,
-                    temperaturaPromedio: stats.promedioGeneral,
-                    top10Temperaturas: stats.top10Temperaturas.map((valor) => Number(valor.temperatura.toFixed(1))),
-                    top10Presiones: stats.top10Presiones.map((valor) => Number(valor.presion.toFixed(1))),
+                    timestamp: new Date().toISOString(),
+                    metadatos: {
+                        total_analizados: totalRegistros,
+                        total_validos: stats.cantidadValidos,
+                        temperatura_media: stats.promedioGeneral,
+                    },
+                    valores_criticos: {
+                        maximas_temperaturas: stats.top10Temperaturas,
+                        maximas_presiones: stats.top10Presiones,
+                    },
                 }, 'registros_cuanticos.json');
             }, { once: true });
 
